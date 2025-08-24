@@ -14,7 +14,7 @@ import { History } from 'src/modules/history/history.entity';
       useFactory: (configService: ConfigService) => {
         return {
           type: 'postgres',
-          host: 'localhost',
+          host: configService.get('dbHost'),
           port: 5432,
           username: configService.get('dbUser'),
           password: configService.get('dbPass'),

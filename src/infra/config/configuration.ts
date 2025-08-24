@@ -1,5 +1,6 @@
 export interface Config {
   port: number;
+  dbHost: string;
   dbName: string;
   dbUser: string;
   dbPass: string;
@@ -10,6 +11,7 @@ export interface Config {
 
 export default (): Config => ({
   port: parseInt(process.env.PORT!) || 3000,
+  dbHost: process.env.DB_HOST!,
   dbName: process.env.DB_NAME!,
   dbUser: process.env.DB_USER!,
   dbPass: process.env.DB_PASS!,
