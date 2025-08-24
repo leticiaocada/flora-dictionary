@@ -1,4 +1,9 @@
+import { IsEmail, IsString } from 'class-validator';
+
 export class userTokenDto {
-  id: number;
-  username: string;
+  @IsString()
+  id: string;
+
+  @IsEmail()
+  email: string;
 }

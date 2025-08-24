@@ -6,6 +6,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { getUserFromToken } from '../user/user.utils';
 import { userTokenDto } from '../user/user.dto';
 import { FavoriteService } from '../favorite/favorite.service';
+import { DictionaryEntry } from './dictionary.type';
+import { HistoryService } from '../history/history.service';
 
 @Injectable()
 export class DictionaryService {
@@ -13,13 +15,16 @@ export class DictionaryService {
     @InjectRepository(Dictionary)
     private dictionaryRepository: Repository<Dictionary>,
     private readonly favorite: FavoriteService,
+    private readonly history: HistoryService,
   ) {}
 
   async getWords(search: string) {
-    const [result, total] = await this.dictionaryRepository.findAndCount({
+    if (!search) {
+      return await this.dictionaryRepository.findAndCount();
+    }
+    return await this.dictionaryRepository.findAndCount({
       where: { word: ILike(`%${search}%`) },
     });
-    return result;
   }
 
   async getSpecificWord(search: string) {
@@ -29,31 +34,35 @@ export class DictionaryService {
     if (!result) {
       throw new BadRequestException('Word not found');
     }
-    const apiResponse = await fetch(
+    const res = await fetch(
       `https://api.dictionaryapi.dev/api/v2/entries/en/${result.word}`,
     );
 
-    if (!apiResponse.ok) {
+    if (!res.ok) {
       throw new BadRequestException('Search unsuccesful');
     }
-    const data = await apiResponse.json();
+
+    const data: DictionaryEntry[] = await res.json();
     return data;
   }
 
-  favoriteWord(word: string, token: string) {
+  async favoriteWord(word: string, token: string) {
     const user: userTokenDto = getUserFromToken(token);
-    try {
-      this.getSpecificWord(word);
-      const result = this.favorite.setFavorite(word, user.id);
-      return result;
-    } catch {
-      throw new BadRequestException('Word does not exist');
-    }
+    await this.getSpecificWord(word);
+    const result = await this.favorite.setFavorite(word, user.id);
+    return result;
   }
 
-  unfavoriteWord(word: string, token: string) {
+  async unfavoriteWord(word: string, token: string) {
     const user: userTokenDto = getUserFromToken(token);
-    const result = this.favorite.unfavorite(word, user.id);
-    return result;
+    return await this.favorite.unfavorite(word, user.id);
+  }
+
+  async saveHistory(id: string, word: string) {
+    try {
+      return await this.history.registerHistory(id, word);
+    } catch {
+      throw new BadRequestException('Could not save history');
+    }
   }
 }

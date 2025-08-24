@@ -1,13 +1,6 @@
-/* eslint-disable @typescript-eslint/no-misused-promises */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable prettier/prettier */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { CreateUserDto, signInUserDto } from './auth.dto';
-import * as bcrypt from 'bcrypt';
+import { CreateUserDto, SignInUserDto } from './auth.dto';
+import { compare, genSalt, hash } from 'bcrypt';
 import { UserService } from 'src/modules/user/user.service';
 import { sign } from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
@@ -25,35 +18,39 @@ export class AuthService {
   }
 
   async createUser(createUser: CreateUserDto) {
-    const salt = await bcrypt.genSalt();
-    const hash = await bcrypt.hash(createUser.password, salt);
+    const salt = await genSalt();
+    const hashedPassword = await hash(createUser.password, salt);
     const user = {
-      username: createUser.username,
-      password: hash,
+      email: createUser.email,
+      name: createUser.name,
+      password: hashedPassword,
     };
     const userResult = await this.user.createUser(user);
 
     if (!userResult) {
       throw new BadRequestException('Error creating user');
     }
+
+    return this.signIn({
+      email: createUser.email,
+      password: createUser.password,
+    });
   }
 
-  async signIn(signInUser: signInUserDto) {
-    const user = await this.user.findUser(signInUser.username);
+  async signIn(signInUser: SignInUserDto) {
+    const user = await this.user.findUser(signInUser.email);
     if (!user) {
       throw new BadRequestException('Invalid information');
     }
-    const result = await bcrypt.compare(signInUser.password, user.password);
+
+    const result = await compare(signInUser.password, user.password);
     if (!result) {
       throw new BadRequestException('Invalid information');
     }
-    const token = sign(
-      { id: user.id, username: user.username },
-      this.b64_priv_key,
-      {
-        algorithm: 'RS256',
-      },
-    );
-    return { token };
+
+    const token = sign({ id: user.id, email: user.email }, this.b64_priv_key, {
+      algorithm: 'RS256',
+    });
+    return { id: user.id, name: user.name, token };
   }
 }

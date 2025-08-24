@@ -21,9 +21,13 @@ export class AuthenticationGuard implements CanActivate {
     return this.validadeToken(request);
   }
 
-  validadeToken(request) {
+  validadeToken(request: Request) {
     try {
-      const token = request.headers.authorization.split(' ')[1];
+      const headerAuthorization: string = request.headers['authorization'];
+      if (!headerAuthorization) {
+        throw new BadRequestException('Error authenticating');
+      }
+      const token = headerAuthorization.split(' ')[1];
       verify(token, this.decodedPublicKey);
       return true;
     } catch {

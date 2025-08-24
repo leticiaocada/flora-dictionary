@@ -8,7 +8,7 @@ import {
 import { User } from '../user/user.entity';
 
 @Entity()
-export class Favorite {
+export class History {
   @PrimaryGeneratedColumn()
   id: number;
 
