@@ -56,7 +56,6 @@ export class FavoriteService {
       }
       queryBuilder.andWhere('user_id = :userId', { userId });
       const [results, totalDocs] = await queryBuilder.getManyAndCount();
-
       const hasNextPage = results.length > limit;
       let favorites = hasNextPage ? results.slice(0, limit) : results;
       if (params.isPrevious) {

@@ -17,12 +17,20 @@ export class UserService {
   ) {}
 
   async createUser(user: CreateUserDto) {
-    const userEntity = this.userRepository.create(user);
-    return this.userRepository.save<User>(userEntity);
+    try {
+      const userEntity = this.userRepository.create(user);
+      return this.userRepository.save<User>(userEntity);
+    } catch {
+      throw new BadRequestException('Error creating user');
+    }
   }
 
   async findUser(email: string) {
-    return this.userRepository.findOne({ where: { email } });
+    try {
+      return this.userRepository.findOne({ where: { email } });
+    } catch {
+      throw new BadRequestException('Error finding user');
+    }
   }
 
   async getFavorites(id: string, params: PaginationDTO) {

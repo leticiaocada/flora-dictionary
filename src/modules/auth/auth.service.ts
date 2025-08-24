@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateUserDto, SignInUserDto } from './auth.dto';
 import { compare, genSalt, hash } from 'bcrypt';
-import { UserService } from 'src/modules/user/user.service';
+import { UserService } from '../user/user.service';
 import { sign } from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
 
@@ -42,7 +42,6 @@ export class AuthService {
     if (!user) {
       throw new BadRequestException('Invalid information');
     }
-
     const result = await compare(signInUser.password, user.password);
     if (!result) {
       throw new BadRequestException('Invalid information');
@@ -50,6 +49,7 @@ export class AuthService {
 
     const token = sign({ id: user.id, email: user.email }, this.b64_priv_key, {
       algorithm: 'RS256',
+      expiresIn: '1h',
     });
     return { id: user.id, name: user.name, token };
   }

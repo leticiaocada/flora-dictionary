@@ -1,13 +1,13 @@
 import { Get, UseGuards, Inject, Req, Res, Query } from '@nestjs/common';
 import { Controller } from '@nestjs/common';
 import { UserService } from './user.service';
-import { AuthenticationGuard } from 'src/infra/guards/authentication.guard';
+import { AuthenticationGuard } from '../../infra/guards/authentication.guard';
 import { getUserFromToken } from './user.utils';
 import { userTokenDto } from './user.dto';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
-import { DEFAULT_TTL } from 'src/infra/cache/cache.constants';
+import { DEFAULT_TTL } from '../../infra/cache/cache.constants';
 import type { Request, Response } from 'express';
-import { returnResponseWithHeaders } from 'src/infra/http/http.utils';
+import { returnResponseWithHeaders } from '../../infra/http/http.utils';
 import { PaginationDTO } from '../dictionary/dictionary.dto';
 
 @Controller('user')
