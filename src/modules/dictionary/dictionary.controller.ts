@@ -18,6 +18,7 @@ import { returnResponseWithHeaders } from 'src/infra/http/http.utils';
 import type { Request, Response } from 'express';
 import { getUserFromToken } from '../user/user.utils';
 import { userTokenDto } from '../user/user.dto';
+import { GetWordsDTO } from './dictionary.dto';
 
 @Controller('entries')
 export class DictionaryController {
@@ -28,7 +29,7 @@ export class DictionaryController {
 
   @UseGuards(AuthenticationGuard)
   @Get('/en')
-  async getWords(@Query() params: { search: string }, @Res() res: Response) {
+  async getWords(@Query() params: GetWordsDTO, @Res() res: Response) {
     const start = performance.now();
 
     const cachedWords = await this.cacheManager.get(
@@ -38,7 +39,7 @@ export class DictionaryController {
       return returnResponseWithHeaders(start, res, 'HIT', cachedWords);
     }
 
-    const result = await this.dictionaryService.getWords(params?.search);
+    const result = await this.dictionaryService.getWords(params);
     await this.cacheManager.set(
       `getWords-${params?.search}`,
       result,
@@ -77,13 +78,13 @@ export class DictionaryController {
   @Post('/en/:word/favorite')
   async favoriteWord(@Param('word') word: string, @Req() req: Request) {
     const token = req.headers['authorization']!;
-    return this.dictionaryService.favoriteWord(word, token);
+    return await this.dictionaryService.favoriteWord(word, token);
   }
 
   @UseGuards(AuthenticationGuard)
   @Delete('/en/:word/unfavorite')
   async unfavoriteWord(@Param('word') word: string, @Req() req: Request) {
     const token = req.headers['authorization']!;
-    return this.dictionaryService.unfavoriteWord(word, token);
+    return await this.dictionaryService.unfavoriteWord(word, token);
   }
 }

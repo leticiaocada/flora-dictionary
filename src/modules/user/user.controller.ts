@@ -1,4 +1,4 @@
-import { Get, UseGuards, Inject, Req, Res } from '@nestjs/common';
+import { Get, UseGuards, Inject, Req, Res, Query } from '@nestjs/common';
 import { Controller } from '@nestjs/common';
 import { UserService } from './user.service';
 import { AuthenticationGuard } from 'src/infra/guards/authentication.guard';
@@ -8,6 +8,7 @@ import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import { DEFAULT_TTL } from 'src/infra/cache/cache.constants';
 import type { Request, Response } from 'express';
 import { returnResponseWithHeaders } from 'src/infra/http/http.utils';
+import { PaginationDTO } from '../dictionary/dictionary.dto';
 
 @Controller('user')
 export class UserController {
@@ -18,7 +19,11 @@ export class UserController {
 
   @UseGuards(AuthenticationGuard)
   @Get('me/favorites')
-  async getFavorites(@Req() req: Request, @Res() res: Response) {
+  async getFavorites(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Query() params: PaginationDTO,
+  ) {
     const start = performance.now();
     const user: userTokenDto = this.getUserFromToken(req);
     const cachedUserFavorites = await this.cacheManager.get(
@@ -29,7 +34,7 @@ export class UserController {
       return returnResponseWithHeaders(start, res, 'HIT', cachedUserFavorites);
     }
 
-    const result = await this.userService.getFavorites(user.id);
+    const result = await this.userService.getFavorites(user.id, params);
 
     await this.cacheManager.set(`${user.id}-favorites`, result, DEFAULT_TTL);
 
@@ -54,7 +59,11 @@ export class UserController {
 
   @UseGuards(AuthenticationGuard)
   @Get('me/history')
-  async getHistory(@Req() req: Request, @Res() res: Response) {
+  async getHistory(
+    @Req() req: Request,
+    @Query() params: PaginationDTO,
+    @Res() res: Response,
+  ) {
     const start = performance.now();
     const user: userTokenDto = this.getUserFromToken(req);
     const cachedHistory = await this.cacheManager.get(`${user.id}-history`);
@@ -63,7 +72,7 @@ export class UserController {
       return returnResponseWithHeaders(start, res, 'HIT', cachedHistory);
     }
 
-    const result = await this.userService.getHistory(user.id);
+    const result = await this.userService.getHistory(user.id, params);
     await this.cacheManager.set(`${user.id}-history`, result, DEFAULT_TTL);
 
     return returnResponseWithHeaders(start, res, 'MISS', result);

@@ -4,6 +4,7 @@ import { Dictionary } from 'src/modules/dictionary/dictionary.entity';
 import { User } from 'src/modules/user/user.entity';
 import { Favorite } from 'src/modules/favorite/favorite.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { History } from 'src/modules/history/history.entity';
 
 @Module({
   imports: [
@@ -18,7 +19,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
           username: configService.get('dbUser'),
           password: configService.get('dbPass'),
           database: configService.get('dbName'),
-          entities: [User, Dictionary, Favorite],
+          entities: [User, Dictionary, Favorite, History],
           synchronize: true,
         };
       },

@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FavoriteService } from '../favorite/favorite.service';
 import { CreateUserDto } from '../auth/auth.dto';
 import { HistoryService } from '../history/history.service';
+import { PaginationDTO } from '../dictionary/dictionary.dto';
 
 @Injectable()
 export class UserService {
@@ -24,9 +25,9 @@ export class UserService {
     return this.userRepository.findOne({ where: { email } });
   }
 
-  async getFavorites(id: string) {
+  async getFavorites(id: string, params: PaginationDTO) {
     try {
-      return await this.favorite.getFavoritesByUserId(id);
+      return await this.favorite.getFavoritesByUserId(id, params);
     } catch {
       throw new BadRequestException('Error returning favorites');
     }
@@ -40,9 +41,9 @@ export class UserService {
     }
   }
 
-  async getHistory(id: string) {
+  async getHistory(id: string, params: PaginationDTO) {
     try {
-      return this.history.getHistory(id);
+      return await this.history.getHistory(id, params);
     } catch {
       throw new BadRequestException('Failed to retrieve history');
     }
