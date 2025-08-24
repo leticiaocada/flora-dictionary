@@ -41,6 +41,14 @@ O **Flora Dictionary** permite que usuários realizem login, consultem palavras 
 2. **Configurar variáveis de ambiente**
 
    Crie um arquivo `.env` na raiz do projeto seguindo o .env.example localizado na raiz do projeto
+   Rode os comandos abaixo e coloque o output das chaves nas variaveis corretas
+
+   ```bash
+   openssl genpkey -algorithm RSA -out private_key.pem -pkeyopt rsa_keygen_bits:2048
+   openssl rsa -pubout -in private_key.pem -out public_key.pem
+   cat private_key.pem | base64
+   cat public_key.pem | base64
+   ```
 
 3. **Subir containers com Docker Compose**
 
